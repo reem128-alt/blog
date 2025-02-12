@@ -53,15 +53,15 @@ const CreatePost = () => {
     return (
         <form onSubmit={handleSubmit} className=" p-6 rounded-lg  space-y-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700">Title:</label>
+                <label className="block text-md font-medium text-gray-900">Title:</label>
                 <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700">Content:</label>
+                <label className="block text-md font-medium text-gray-900">Content:</label>
                 <textarea value={content} onChange={(e) => setContent(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md p-2" rows={4}></textarea>
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700">Image:</label>
+                <label className="block text-md font-medium text-gray-900">Image:</label>
                 <input 
                     type="file" 
                     accept="image/*" 
@@ -76,7 +76,7 @@ const CreatePost = () => {
                 />
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700">Category:</label>
+                <label className="block text-md font-medium text-gray-900">Category:</label>
                 <select value={category} onChange={(e) => setCategory(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md p-2">
                     <option value="">Select a category</option>
                     <option value="tech">Tech</option>
