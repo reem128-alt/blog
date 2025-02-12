@@ -3,13 +3,15 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { createPost } from '../utils/service';
 
-const CreatePost = () => {
+interface CreatePostProps {
+    onClose: () => void;
+}
+
+const CreatePost = ({ onClose }: CreatePostProps) => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [category, setCategory] = useState('');
-
-    
 
     const mutation=useMutation({
         mutationFn:createPost,
@@ -21,6 +23,7 @@ const CreatePost = () => {
             setImage(null);
             setCategory('');
             toast.success('Post created successfully!');
+            onClose(); // Close the modal after successful creation
         },
         onError:()=>{
            toast.error("failed create post")
