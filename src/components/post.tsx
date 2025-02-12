@@ -175,7 +175,7 @@ export default function PostPage(post: Post) {
           <img
             src={`${import.meta.env.VITE_BASE_URL}/${post.image}`}
             alt={post.title}
-            className="w-full h-64 object-cover rounded-lg mb-4"
+            className="w-full h-64 object-contain rounded-lg mb-4"
           />
         )}
 
