@@ -1,320 +1,104 @@
-import React from "react";
-import {
-  getCommentByPostId,
-  getUserByid,
-  User,
-  type Post,
-  Comment,
-  createComment,
-  addLike,
-  deletePost,
-  updateComment,
-  deleteComment,
-} from "../utils/service";
-import { FaThumbsUp, FaRegThumbsUp, FaComment, FaUser, FaPaperPlane,FaTrash, FaEdit } from "react-icons/fa";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Loading from "./loading";
-import { Link } from "react-router-dom";
-import { EditPostModal } from "./editPost";
+import {useQuery } from "@tanstack/react-query";
+import { FaPlusCircle, FaUser } from "react-icons/fa";
+import { getAllpost } from "./utils/service";
+import type { Post } from "./utils/service";
+import PostPage from "./components/post";
+import { useState } from "react";
+import CreatePost from "./components/createPost";
+import Profile from "./components/profile";
+import Loading from "./components/loading";
 
-export default function PostPage(post: Post) {
-  const [isEditing, setIsEditing] = React.useState(false)
-  const [editingCommentId, setEditingCommentId] = React.useState<string | null>(null);
-  const [editCommentContent, setEditCommentContent] = React.useState("");
-  const [showComments, setShowComments] = React.useState<{
-    [postId: string]: boolean;
-  }>({});
-  const [newComment, setNewComment] = React.useState("");
-  const queryClient = useQueryClient();
-
-  const { data: session } = useQuery({
-    queryKey: ["session"],
-    queryFn: () => {
-      const saved = localStorage.getItem("user-session");
-      if (!saved) return null;
-      return JSON.parse(saved);
-    },
-  });
-  const canDelete = session?.isAdmin || session?._id === post.userId;
-
-  const { data: user, isLoading } = useQuery<User>({
-    queryKey: ["user", post.userId],
-    queryFn: () => getUserByid(post.userId),
+export default function HomePage() {
+  const [showModal, setShowModal] = useState(false);
+  const [showProfile, setShowProfile] = useState(false); // Fetch all posts
+  const { data: blogs = [], isLoading: postsLoading } = useQuery<Post[]>({
+    queryKey: ["posts"],
+    queryFn: getAllpost,
   });
 
-  const { data: comments, isLoading: commentsLoading } = useQuery<Comment[]>({
-    queryKey: ["comments", post._id],
-    queryFn: () => getCommentByPostId(post._id),
-  });
-  const createCommentMutation = useMutation({
-    mutationFn: (content: string) => createComment(post._id, content),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-      setNewComment("");
-    },
-  });
+  console.log(blogs);
 
-  const likeCommentMutation = useMutation({
-    mutationFn: (commentId: string) => addLike(commentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-    },
-  });
-
-  const updateCommentMutation = useMutation({
-    mutationFn: ({ commentId, content }: { commentId: string; content: string }) =>
-      updateComment(commentId, { content }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-      setEditingCommentId(null);
-      setEditCommentContent("");
-    },
-  });
-
-  const deleteCommentMutation = useMutation({
-    mutationFn: deleteComment,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
-    },
-  });
-
-  const deletePostMutation = useMutation({
-    mutationFn:deletePost,
-    onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["posts"] });
-    },
-});
-
-  const handleCommentLike = (commentId: string) => {
-    likeCommentMutation.mutate(commentId);
-  };
-
-  const handleSubmitComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim()) {
-      createCommentMutation.mutate(newComment);
-    }
-  };
-
-  const handleUpdateComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingCommentId && editCommentContent.trim()) {
-      updateCommentMutation.mutate({
-        commentId: editingCommentId,
-        content: editCommentContent,
-      });
-    }
-  };
-
-  const handleDeleteComment = (commentId: string) => {
-    if (window.confirm("Are you sure you want to delete this comment?")) {
-      deleteCommentMutation.mutate(commentId);
-    }
-  };
-
-  const startEditingComment = (comment: Comment) => {
-    setEditingCommentId(comment._id);
-    setEditCommentContent(comment.content);
-  };
-
-  const handleDeletePost = () => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      deletePostMutation.mutate(post._id);
+  if (postsLoading) {
+    return (
+      <Loading />
+    );
   }
-};
 
-  const toggleComments = (postId: string) => {
-    setShowComments((prev) => ({
-      ...prev,
-      [postId]: !prev[postId],
-    }));
-  };
-
-  if (isLoading || commentsLoading) return <Loading />;
   return (
-    <div>
-      <div
-        key={post.slug}
-        className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
-      >
-        {/* Post Header */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2" >
-            {user?.profilePicture ? (
-              <img
-                src={`${import.meta.env.VITE_BASE_URL}/${user.profilePicture}`}
-                alt={user.username}
-                className="w-8 h-8 rounded-full"
-              />
-            ) : (
-              <FaUser className="text-gray-500" />
-                 )
-            }
-            <div className="flex items-center gap-2">
-              <span className="font-medium">
-                {user?.username || "Unknown User"}
-              </span>
-              <span className="text-sm text-gray-500">• {post.category}</span>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 animate-gradient-xy">
+      {/* Header Navigation */}
+      <header className="bg-white bg-opacity-15 backdrop-blur-md shadow-lg border-b border-white/10">
+        <div className="container mx-auto px-4">
+          <nav className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-8">
+              <a
+                href="/"
+                className="text-white text-xl  font-serif font-bold tracking-wide hover:text-blue-200"
+              >
+                Social Blog
+              </a>
+              <button
+                onClick={() => setShowModal(true)}
+                className="text-white font-semibold hover:text-blue-200 flex items-center gap-2 transition-colors duration-200"
+              >
+                <FaPlusCircle className="text-blue-200" /> Create Post
+              </button>
             </div>
-          </div>
-          <div className="flex flex-row gap-7">
-          {canDelete ? <FaTrash className="text-red-500" onClick={handleDeletePost} /> : null}
-          {canDelete ? <FaEdit className="text-red-500" onClick={() => setIsEditing(true)} /> : null}
-          </div>
-        
+            <div className="flex items-center">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setShowProfile(true)}
+                  className="flex items-center space-x-2 text-white hover:text-blue-200 transition-colors duration-200"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <FaUser className="text-white" />
+                  </div>
+                  <span>Profile</span>
+                </button>
+              </div>
+            </div>
+          </nav>
+         
         </div>
+      </header>
 
-        {/* Post Title */}
-        <h2 className="text-xl font-bold mb-2">{post.title}</h2>
+      {/* Profile Sidebar */}
+      <Profile isOpen={showProfile} onClose={() => setShowProfile(false)} />
 
-        {/* Post Content */}
-        <p className="text-gray-700 dark:text-gray-300 mb-4 text-wrap">{post.content}</p>
-
-        {/* Post Image */}
-        {post.image && (
-          <img
-            src={`${import.meta.env.VITE_BASE_URL}/${post.image}`}
-            alt={post.title}
-            className="w-full h-64 object-contain rounded-lg mb-4"
-          />
-        )}
-
-        {/* Post Actions */}
-        <div className="flex justify-between items-center mt-4">
-          <div className="flex items-center gap-4">
-            <Link
-              to={`/post/${post.slug}`}
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Read More
-            </Link>
-            <button
-              onClick={() => toggleComments(post._id)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-            >
-              <FaComment />
-              <span>{comments?.length} Comments</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Comments Section */}
-        <div className="mt-4 border-t pt-4">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Create Post Button */}
           <button
-            onClick={() => toggleComments(post._id)}
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-600"
+            onClick={() => setShowModal(true)}
+            className="mb-6 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
           >
-            <FaComment />
-            {comments?.length || 0} Comments
+            <FaPlusCircle /> Create Post
           </button>
 
-          {showComments[post._id] && (
-            <div className="mt-4 space-y-4">
-              {/* Comment Form */}
-              <form onSubmit={handleSubmitComment} className="flex gap-2">
-                <input
-                  type="text"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Write a comment..."
-                  className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                />
+          {/* Posts List */}
+          <div className="space-y-6">
+            {Array.isArray(blogs) &&
+              blogs.map((post: Post) => {
+                return <PostPage {...post} key={post._id} />;
+              })}
+          </div>
+          {showModal && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+              <div className="bg-gradient-to-br from-white/10 to-white/20 p-6 rounded-xl shadow-xl backdrop-blur-md border border-white/20 w-full max-w-md">
                 <button
-                  type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2"
+                  onClick={() => setShowModal(false)}
+                  className="mb-4 text-white hover:text-blue-200 transition-colors duration-200"
                 >
-                  <FaPaperPlane />
-                  Send
+                  Close
                 </button>
-              </form>
-
-              {/* Comments List */}
-              {comments?.map((comment) => (
-                <div
-                  key={comment._id}
-                  className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
-                >
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2 mb-2">
-                      {comment.userId.profilePicture ? (
-                        <img
-                          src={`${import.meta.env.VITE_BASE_URL}/${comment.userId.profilePicture}`}
-                          alt={comment.userId.username}
-                          className="w-8 h-8 rounded-full"
-                        />
-                      ) : (
-                        <FaUser className="text-gray-500 w-8 h-8" />
-                      )}
-                      <span className="font-medium">{comment.userId.username}</span>
-                    </div>
-                    {session?._id === comment.userId._id && (
-                      <div className="flex gap-2">
-                        <FaEdit
-                          className="text-blue-500 cursor-pointer"
-                          onClick={() => startEditingComment(comment)}
-                        />
-                        <FaTrash
-                          className="text-red-500 cursor-pointer"
-                          onClick={() => handleDeleteComment(comment._id)}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {editingCommentId === comment._id ? (
-                    <form onSubmit={handleUpdateComment} className="mt-2 flex gap-2">
-                      <input
-                        type="text"
-                        value={editCommentContent}
-                        onChange={(e) => setEditCommentContent(e.target.value)}
-                        className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                      />
-                      <button
-                        type="submit"
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                      >
-                        Update
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingCommentId(null);
-                          setEditCommentContent("");
-                        }}
-                        className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-                      >
-                        Cancel
-                      </button>
-                    </form>
-                  ) : (
-                    <p className="text-gray-700 dark:text-gray-300">{comment.content}</p>
-                  )}
-                  <button
-                    onClick={() => handleCommentLike(comment._id)}
-                    className="flex items-center gap-2 text-blue-500 hover:text-blue-600 mt-2"
-                  >
-                    {comment.likes?.includes(session?._id ?? "") ? (
-                      <FaThumbsUp />
-                    ) : (
-                      <FaRegThumbsUp />
-                    )}
-                    {comment.numberOfLikes || 0} Likes
-                  </button>
-                </div>
-              ))}
+                <CreatePost onClose={() => setShowModal(false)} />
+                
+              </div>
             </div>
           )}
+          
         </div>
       </div>
-      
-      {/* Edit Modal - Moved outside of comments section */}
-      {isEditing && (
-        <EditPostModal
-          post={post}
-          isOpen={isEditing}
-          onClose={() => setIsEditing(false)}
-        />
-      )}
     </div>
   );
 }
