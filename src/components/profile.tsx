@@ -8,7 +8,7 @@ interface ProfileProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
+const url=import.meta.env.VITE_BASE_URL
 export default function Profile({ isOpen, onClose }: ProfileProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -146,7 +146,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
               hover:scale-105 transition-transform duration-300 relative">
               {session?.profilePicture ? (
                 <img
-                  src={`http://localhost:3000/${session.profilePicture}`}
+                  src={`${url}/${session.profilePicture}`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
