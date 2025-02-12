@@ -67,14 +67,6 @@ export default function HomePage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Create Post Button */}
-          <button
-            onClick={() => setShowModal(true)}
-            className="mb-6 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            <FaPlusCircle /> Create Post
-          </button>
-
           {/* Posts List */}
           <div className="space-y-6">
             {Array.isArray(blogs) &&
