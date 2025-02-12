@@ -91,7 +91,7 @@ export default function HomePage() {
                 >
                   Close
                 </button>
-                <CreatePost />
+                <CreatePost onClose={() => setShowModal(false)} />
                 
               </div>
             </div>
