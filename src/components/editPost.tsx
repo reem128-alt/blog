@@ -3,13 +3,14 @@ import { updatePost, type Post } from "../utils/service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaTimes, FaImage, FaHeading, FaTag, FaParagraph } from "react-icons/fa";
 
+const url=import.meta.env.VITE_BASE_URL
 export function EditPostModal({ post, isOpen, onClose }: { post: Post; isOpen: boolean; onClose: () => void }) {
   const [title, setTitle] = React.useState(post.title);
   const [content, setContent] = React.useState(post.content);
   const [category, setCategory] = React.useState(post.category);
   const [image, setImage] = React.useState<File | null>(null);
   const [previewImage, setPreviewImage] = React.useState<string | null>(
-    post.image ? `http://localhost:3000/${post.image}` : null
+    post.image ? `${url}/${post.image}` : null
   );
   const queryClient = useQueryClient();
 
@@ -124,7 +125,7 @@ export function EditPostModal({ post, isOpen, onClose }: { post: Post; isOpen: b
                     <img
                       src={previewImage}
                       alt="Preview"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                     <button
                       type="button"
