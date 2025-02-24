@@ -221,7 +221,7 @@ export default function PostPage(post: Post) {
                 />
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2"
+                  className="bg-blue-500 text-white px-2 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2"
                 >
                   <FaPaperPlane />
                   Send
@@ -262,7 +262,7 @@ export default function PostPage(post: Post) {
                   </div>
 
                   {editingCommentId === comment._id ? (
-                    <form onSubmit={handleUpdateComment} className="mt-2 flex gap-2">
+                    <form onSubmit={handleUpdateComment} className="mt-2 flex  flex-wrap gap-2">
                       <input
                         type="text"
                         value={editCommentContent}
@@ -271,7 +271,7 @@ export default function PostPage(post: Post) {
                       />
                       <button
                         type="submit"
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                        className="bg-blue-500 text-white px-2 py-2 rounded-lg hover:bg-blue-600"
                       >
                         Update
                       </button>
@@ -281,7 +281,7 @@ export default function PostPage(post: Post) {
                           setEditingCommentId(null);
                           setEditCommentContent("");
                         }}
-                        className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+                        className="bg-gray-500 text-white px-2 py-2 rounded-lg hover:bg-gray-600"
                       >
                         Cancel
                       </button>
