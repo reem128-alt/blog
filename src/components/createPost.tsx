@@ -1,13 +1,15 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { createPost } from '../utils/service';
 
 interface CreatePostProps {
     onClose: () => void;
+    
 }
 
-const CreatePost = ({ onClose }: CreatePostProps) => {
+const CreatePost = ({ onClose}: CreatePostProps) => {
+    const queryClient=useQueryClient()
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [image, setImage] = useState<File | null>(null);
@@ -15,15 +17,10 @@ const CreatePost = ({ onClose }: CreatePostProps) => {
 
     const mutation=useMutation({
         mutationFn:createPost,
-        onSuccess:(data)=>{
-            console.log(data)
+        onSuccess:()=>{
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
             // Clear form after successful submission
-            setTitle('');
-            setContent('');
-            setImage(null);
-            setCategory('');
-            toast.success('Post created successfully!');
-            onClose(); // Close the modal after successful creation
+         
         },
         onError:()=>{
            toast.error("failed create post")
@@ -51,35 +48,44 @@ const CreatePost = ({ onClose }: CreatePostProps) => {
         });
         
         mutation.mutate(formData);
+        setTitle('');
+        setContent('');
+        setImage(null);
+        setCategory('');
+        toast.success('Post created successfully!'); // Refresh the posts after creating a new one
+        onClose(); // Cl
+    };
+
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setImage(file);
+        }
     };
 
     return (
-        <form onSubmit={handleSubmit} className=" p-6 rounded-lg  space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 rounded-lg space-y-4 max-h-[500px] overflow-y-scroll">
             <div>
-                <label className="block text-md font-medium text-gray-900">Title:</label>
+                <label className="block text-md font-medium text-gray-200">Title:</label>
                 <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
             </div>
             <div>
-                <label className="block text-md font-medium text-gray-900">Content:</label>
+                <label className="block text-md font-medium text-gray-200">Content:</label>
                 <textarea value={content} onChange={(e) => setContent(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md p-2" rows={4}></textarea>
             </div>
             <div>
-                <label className="block text-md font-medium text-gray-900">Image:</label>
+                <label className="block text-md font-medium text-gray-200">Image:</label>
                 <input 
                     type="file" 
                     accept="image/*" 
-                    onChange={(e) => {
-                        const files = e.target.files;
-                        if (files && files.length > 0) {
-                            setImage(files[0]);
-                        }
-                    }} 
+                    onChange={handleImageChange} 
                     required 
                     className="mt-1 block w-full border border-gray-300 rounded-md p-2" 
                 />
+                {image && <img src={URL.createObjectURL(image)} alt="Image Preview" style={{ width: '100%', height: 'auto' }} />}
             </div>
             <div>
-                <label className="block text-md font-medium text-gray-900">Category:</label>
+                <label className="block text-md font-medium text-gray-200">Category:</label>
                 <select value={category} onChange={(e) => setCategory(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md p-2">
                     <option value="">Select a category</option>
                     <option value="tech">Tech</option>
