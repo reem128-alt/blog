@@ -211,7 +211,7 @@ export default function PostPage(post: Post) {
           {showComments[post._id] && (
             <div className="mt-4 space-y-4">
               {/* Comment Form */}
-              <form onSubmit={handleSubmitComment} className="flex gap-2">
+              <form onSubmit={handleSubmitComment} className="flex gap-2 max-sm:flex-col">
                 <input
                   type="text"
                   value={newComment}
@@ -221,7 +221,7 @@ export default function PostPage(post: Post) {
                 />
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white px-2 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2"
+                  className="bg-blue-500 text-white px-2 py-2 w-24 rounded-lg hover:bg-blue-600 flex items-center gap-2"
                 >
                   <FaPaperPlane />
                   Send
