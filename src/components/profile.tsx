@@ -1,6 +1,14 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { FaUser, FaEnvelope, FaTimes, FaSignOutAlt, FaEdit, FaCheck, FaTimes as FaCancel } from "react-icons/fa";
+import {
+  FaUser,
+  FaEnvelope,
+  FaTimes,
+  FaSignOutAlt,
+  FaEdit,
+  FaCheck,
+  FaTimes as FaCancel,
+} from "react-icons/fa";
 import { logout, updateProfilePicture, updateUser } from "../utils/service";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +16,7 @@ interface ProfileProps {
   isOpen: boolean;
   onClose: () => void;
 }
-const url=import.meta.env.VITE_BASE_URL
+const url = import.meta.env.VITE_BASE_URL;
 export default function Profile({ isOpen, onClose }: ProfileProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -16,7 +24,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     username: "",
-    email: ""
+    email: "",
   });
 
   const { data: session } = useQuery({
@@ -27,6 +35,15 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       return JSON.parse(saved);
     },
   });
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        localStorage.clear(); // Clear local storage after one hour
+        console.log('Local storage cleared after one hour');
+    }, 3600000); // 1 hour in milliseconds
+
+    // Cleanup function to clear the timer if the component unmounts
+    return () => clearTimeout(timer);
+}, []);
 
   const updateProfileMutation = useMutation({
     mutationFn: updateProfilePicture,
@@ -34,20 +51,20 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       const currentSession = queryClient.getQueryData(["session"]);
       if (currentSession) {
-        const updatedSession = { 
-          ...currentSession, 
-          profilePicture: data.user.profilePicture 
+        const updatedSession = {
+          ...currentSession,
+          profilePicture: data.user.profilePicture,
         };
         queryClient.setQueryData(["session"], updatedSession);
         localStorage.setItem("user-session", JSON.stringify(updatedSession));
       }
     },
   });
- 
+
   const updateUserMutation = useMutation({
     mutationFn: (data: { username: string; email: string }) => {
       if (!session?._id) {
-        throw new Error('No user session found');
+        throw new Error("No user session found");
       }
       return updateUser(session._id, data);
     },
@@ -56,10 +73,10 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       queryClient.invalidateQueries({ queryKey: ["session"] });
       const currentSession = queryClient.getQueryData(["session"]);
       if (currentSession) {
-        const updatedSession = { 
-          ...currentSession, 
+        const updatedSession = {
+          ...currentSession,
           username: data.user.username,
-          email: data.user.email
+          email: data.user.email,
         };
         queryClient.setQueryData(["session"], updatedSession);
         localStorage.setItem("user-session", JSON.stringify(updatedSession));
@@ -67,11 +84,13 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       setIsEditing(false);
     },
     onError: (error) => {
-      console.error('Failed to update user:', error);
-    }
+      console.error("Failed to update user:", error);
+    },
   });
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       const formData = new FormData();
@@ -83,7 +102,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
   const handleEditStart = () => {
     setEditForm({
       username: session?.username || "",
-      email: session?.email || ""
+      email: session?.email || "",
     });
     setIsEditing(true);
   };
@@ -120,30 +139,37 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 
-          ${isOpen ? 'opacity-50' : 'opacity-0 pointer-events-none'}`}
+          ${isOpen ? "opacity-50" : "opacity-0 pointer-events-none"}`}
         onClick={onClose}
       />
-      
+
       {/* Sidebar */}
-      <div 
+      <div
         className={`fixed right-0 top-0 h-full w-80 bg-gradient-to-b from-gray-900 to-gray-800 
           text-white shadow-2xl z-50 transform transition-all duration-300 ease-out
-          ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+          ${isOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
         >
-          <FaTimes size={24} className="transform hover:rotate-90 transition-transform duration-300" />
+          <FaTimes
+            size={24}
+            className="transform hover:rotate-90 transition-transform duration-300"
+          />
         </button>
 
         <div className="flex flex-col items-center p-8 space-y-6">
           {/* Profile Picture - Add entrance animation */}
-          <div className="relative group transform transition-all duration-500 delay-100 
-            ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}">
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg 
-              hover:scale-105 transition-transform duration-300 relative">
+          <div
+            className="relative group transform transition-all duration-500 delay-100 
+            ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}"
+          >
+            <div
+              className="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg 
+              hover:scale-105 transition-transform duration-300 relative"
+            >
               {session?.profilePicture ? (
                 <img
                   src={`${url}/${session.profilePicture}`}
@@ -156,7 +182,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                 </div>
               )}
               {/* Edit overlay */}
-              <div 
+              <div
                 className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center 
                   opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                 onClick={handleEditClick}
@@ -176,8 +202,14 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
           {/* User Info - Add staggered entrance animation */}
           <form onSubmit={handleEditSubmit}>
             <div className="w-full space-y-4">
-              <div className={`bg-white bg-opacity-10 rounded-lg p-4 transform transition-all duration-500 delay-200
-                ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}`}>
+              <div
+                className={`bg-white bg-opacity-10 rounded-lg p-4 transform transition-all duration-500 delay-200
+                ${
+                  isOpen
+                    ? "translate-x-0 opacity-100"
+                    : "translate-x-8 opacity-0"
+                }`}
+              >
                 <div className="flex items-center space-x-3">
                   <FaUser className="text-purple-400" />
                   <div className="flex-1">
@@ -186,7 +218,12 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                       <input
                         type="text"
                         value={editForm.username}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, username: e.target.value }))}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            username: e.target.value,
+                          }))
+                        }
                         className="w-full bg-white bg-opacity-10 rounded px-2 py-1 text-white"
                       />
                     ) : (
@@ -196,8 +233,14 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                 </div>
               </div>
 
-              <div className={`bg-white bg-opacity-10 rounded-lg p-4 transform transition-all duration-500 delay-300
-                ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'}`}>
+              <div
+                className={`bg-white bg-opacity-10 rounded-lg p-4 transform transition-all duration-500 delay-300
+                ${
+                  isOpen
+                    ? "translate-x-0 opacity-100"
+                    : "translate-x-8 opacity-0"
+                }`}
+              >
                 <div className="flex items-center space-x-3">
                   <FaEnvelope className="text-purple-400" />
                   <div className="flex-1">
@@ -206,7 +249,12 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                       <input
                         type="email"
                         value={editForm.email}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
                         className="w-full bg-white bg-opacity-10 rounded px-2 py-1 text-white"
                       />
                     ) : (
@@ -259,7 +307,9 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
             className={`w-full mt-8 bg-red-500 hover:bg-red-600 text-white rounded-lg 
               py-3 px-4 flex items-center justify-center space-x-2 transform transition-all 
               duration-500 delay-400 hover:scale-105
-              ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+              ${
+                isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+              }`}
           >
             <FaSignOutAlt className="text-white" />
             <span>Sign Out</span>
