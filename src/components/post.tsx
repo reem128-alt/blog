@@ -144,7 +144,7 @@ export default function PostPage(post: Post) {
               <img
                 src={`${import.meta.env.VITE_BASE_URL}/${user.profilePicture}`}
                 alt={user.username}
-                className="w-8 h-8 rounded-full"
+                className="object-fit  rounded-full"
               />
             ) : (
               <FaUser className="text-gray-500" />
