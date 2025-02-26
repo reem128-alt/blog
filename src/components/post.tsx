@@ -139,12 +139,12 @@ export default function PostPage(post: Post) {
       >
         {/* Post Header */}
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2" >
+          <div className="flex items-center gap-2 h-8 w-8" >
             {user?.profilePicture ? (
               <img
                 src={`${import.meta.env.VITE_BASE_URL}/${user.profilePicture}`}
                 alt={user.username}
-                className="object-fit  rounded-full"
+                className="object-contain  rounded-full"
               />
             ) : (
               <FaUser className="text-gray-500" />
