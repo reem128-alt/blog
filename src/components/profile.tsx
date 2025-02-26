@@ -174,7 +174,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                 <img
                   src={`${url}/${session.profilePicture}`}
                   alt="Profile"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
