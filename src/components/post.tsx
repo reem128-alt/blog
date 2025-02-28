@@ -139,12 +139,12 @@ export default function PostPage(post: Post) {
       >
         {/* Post Header */}
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2 h-8 w-8" >
+          <div className="flex items-center gap-2 " >
             {user?.profilePicture ? (
               <img
-                src={`${import.meta.env.VITE_BASE_URL}/${user.profilePicture}`}
+                src={user.profilePicture}
                 alt={user.username}
-                className="object-contain  rounded-full"
+                className="w-8 h-8 rounded-full "
               />
             ) : (
               <FaUser className="text-gray-500" />
@@ -173,7 +173,7 @@ export default function PostPage(post: Post) {
         {/* Post Image */}
         {post.image && (
           <img
-            src={`${import.meta.env.VITE_BASE_URL}/${post.image}`}
+            src={post.image}
             alt={post.title}
             className="w-full h-64 object-contain rounded-lg mb-4"
           />
@@ -221,7 +221,7 @@ export default function PostPage(post: Post) {
                 />
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white px-2 py-2 w-24 rounded-lg hover:bg-blue-600 flex items-center gap-2"
+                  className="bg-blue-500 text-white h-7 px-2 py-2 w-24 rounded-lg hover:bg-blue-600 flex items-center gap-2"
                 >
                   <FaPaperPlane />
                   Send
@@ -238,7 +238,7 @@ export default function PostPage(post: Post) {
                     <div className="flex items-center gap-2 mb-2">
                       {comment.userId.profilePicture ? (
                         <img
-                          src={`${import.meta.env.VITE_BASE_URL}/${comment.userId.profilePicture}`}
+                          src={comment.userId.profilePicture}
                           alt={comment.userId.username}
                           className="w-8 h-8 rounded-full"
                         />
