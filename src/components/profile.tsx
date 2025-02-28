@@ -36,14 +36,32 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
     },
   });
   useEffect(() => {
-    const timer = setTimeout(() => {
-        localStorage.clear(); // Clear local storage after one hour
-        console.log('Local storage cleared after one hour');
-    }, 3600000); // 1 hour in milliseconds
-
-    // Cleanup function to clear the timer if the component unmounts
-    return () => clearTimeout(timer);
-}, []);
+    // Get timestamp from localStorage (if exists)
+    const expirationTime = localStorage.getItem("session-expiration");
+  
+    if (expirationTime) {
+      const timeLeft = parseInt(expirationTime) - Date.now();
+      if (timeLeft > 0) {
+        // If time is still remaining, set a new timeout
+        setTimeout(() => {
+          localStorage.clear();
+          console.log("Local storage cleared after one hour");
+        }, timeLeft);
+      } else {
+        // If expired, clear storage immediately
+        localStorage.clear();
+        console.log("Session expired, clearing local storage now.");
+      }
+    } else {
+      // Set expiration time if it doesn't exist
+      localStorage.setItem("session-expiration", (Date.now() + 3600000).toString());
+      setTimeout(() => {
+        localStorage.clear();
+        console.log("Local storage cleared after one hour");
+      }, 3600000); // 1 hour
+    }
+  }, []);
+  
 
   const updateProfileMutation = useMutation({
     mutationFn: updateProfilePicture,
@@ -94,7 +112,9 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
     const file = event.target.files?.[0];
     if (file) {
       const formData = new FormData();
-      formData.append("profilePicture", file);
+      formData.append('profilePicture', file);
+      console.log(file)
+      console.log(formData)
       updateProfileMutation.mutate(formData);
     }
   };
@@ -172,9 +192,9 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
             >
               {session?.profilePicture ? (
                 <img
-                  src={`${url}/${session.profilePicture}`}
+                  src={session.profilePicture}
                   alt="Profile"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
