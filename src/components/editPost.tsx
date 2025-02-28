@@ -120,6 +120,7 @@ export function EditPostModal({ post, isOpen, onClose }: { post: Post; isOpen: b
                   <FaImage />
                   Image
                 </label>
+                <img src={post.image} alt="Post Image" style={{ maxWidth: '100%', marginBottom: '1rem' }} />
                 {previewImage ? (
                   <div className="relative w-full h-40 bg-white/20 rounded-lg overflow-hidden">
                     <img
