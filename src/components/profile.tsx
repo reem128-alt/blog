@@ -16,7 +16,7 @@ interface ProfileProps {
   isOpen: boolean;
   onClose: () => void;
 }
-const url = import.meta.env.VITE_BASE_URL;
+
 export default function Profile({ isOpen, onClose }: ProfileProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
