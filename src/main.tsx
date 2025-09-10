@@ -12,11 +12,10 @@ import { Master } from "./layouts/master/Master.tsx";
 import Loading from "./components/loading.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { languages } from "./i18n.ts";
-import ProtectRoute from "./components/protectRoute.tsx";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const LazyHomePage = lazy(() => import("./HomePage.tsx"));
-const LazySignIn = lazy(() => import("./pages/sigin.tsx"));
-const LazySignUp = lazy(() => import("./pages/signup.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -26,19 +25,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/:lang",
-        element:
-        <ProtectRoute> 
-          <LazyHomePage />
-          </ProtectRoute>
-        
-      },
-      {
-        path: "/:lang/signin",
-        element: <LazySignIn />,
-      },
-      {
-        path: "/:lang/signup",
-        element: <LazySignUp />,
+        element: <LazyHomePage />,
       },
       {
         path: "/",
@@ -54,6 +41,22 @@ createRoot(document.getElementById("root") as HTMLElement).render(
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            toastStyle={{
+              borderRadius: "12px",
+              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
+            }}
+          />
         </QueryClientProvider>
       </Provider>
     </Suspense>

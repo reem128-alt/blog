@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const url ="https://blog-backend-myeh.onrender.com"
+const url = import.meta.env.VITE_API_URL;
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;
