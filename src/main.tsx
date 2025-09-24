@@ -7,6 +7,8 @@ import {
   Navigate,
   RouterProvider,
 } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 import { Master } from "./layouts/master/Master.tsx";
 import Loading from "./components/loading.tsx";
@@ -54,6 +56,18 @@ createRoot(document.getElementById("root") as HTMLElement).render(
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="colored"
+          />
         </QueryClientProvider>
       </Provider>
     </Suspense>
