@@ -9,6 +9,7 @@ import {
   FaCheck,
   FaTimes as FaCancel,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { logout, updateProfilePicture, updateUser } from "../utils/service";
 import { useNavigate } from "react-router-dom";
 
@@ -65,8 +66,8 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 
   const updateProfileMutation = useMutation({
     mutationFn: updateProfilePicture,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: ["user"] });
       const currentSession = queryClient.getQueryData(["session"]);
       if (currentSession) {
         const updatedSession = {
@@ -76,6 +77,11 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
         queryClient.setQueryData(["session"], updatedSession);
         localStorage.setItem("user-session", JSON.stringify(updatedSession));
       }
+      toast.success("Profile picture updated successfully!");
+    },
+    onError: (error: Error) => {
+      console.error("Failed to update profile picture:", error);
+      toast.error(error.message || "Failed to update profile picture. Please try again.");
     },
   });
 
@@ -86,9 +92,9 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       }
       return updateUser(session._id, data);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       // Invalidate and refetch session
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+      await queryClient.invalidateQueries({ queryKey: ["session"] });
       const currentSession = queryClient.getQueryData(["session"]);
       if (currentSession) {
         const updatedSession = {
@@ -100,9 +106,11 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
         localStorage.setItem("user-session", JSON.stringify(updatedSession));
       }
       setIsEditing(false);
+      toast.success("Profile updated successfully!");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error("Failed to update user:", error);
+      toast.error(error.message || "Failed to update profile. Please try again.");
     },
   });
 
@@ -144,6 +152,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
     try {
       await logout();
       queryClient.setQueryData(["session"], null);
+      toast.success("Signed out successfully");
       localStorage.removeItem("user-session");
       onClose();
       navigate("/signin");
