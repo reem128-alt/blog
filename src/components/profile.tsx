@@ -9,6 +9,7 @@ import {
   FaCheck,
   FaTimes as FaCancel,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { logout, updateProfilePicture, updateUser } from "../utils/service";
 import { useNavigate } from "react-router-dom";
 
@@ -65,8 +66,8 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
 
   const updateProfileMutation = useMutation({
     mutationFn: updateProfilePicture,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: ["user"] });
       const currentSession = queryClient.getQueryData(["session"]);
       if (currentSession) {
         const updatedSession = {
@@ -76,6 +77,11 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
         queryClient.setQueryData(["session"], updatedSession);
         localStorage.setItem("user-session", JSON.stringify(updatedSession));
       }
+      toast.success("Profile picture updated successfully!");
+    },
+    onError: (error: Error) => {
+      console.error("Failed to update profile picture:", error);
+      toast.error(error.message || "Failed to update profile picture. Please try again.");
     },
   });
 
@@ -86,9 +92,9 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
       }
       return updateUser(session._id, data);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       // Invalidate and refetch session
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+      await queryClient.invalidateQueries({ queryKey: ["session"] });
       const currentSession = queryClient.getQueryData(["session"]);
       if (currentSession) {
         const updatedSession = {
@@ -100,9 +106,11 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
         localStorage.setItem("user-session", JSON.stringify(updatedSession));
       }
       setIsEditing(false);
+      toast.success("Profile updated successfully!");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error("Failed to update user:", error);
+      toast.error(error.message || "Failed to update profile. Please try again.");
     },
   });
 
@@ -144,6 +152,7 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
     try {
       await logout();
       queryClient.setQueryData(["session"], null);
+      toast.success("Signed out successfully");
       localStorage.removeItem("user-session");
       onClose();
       navigate("/signin");
@@ -309,11 +318,40 @@ export default function Profile({ isOpen, onClose }: ProfileProps) {
                     </button>
                     <button
                       type="submit"
+                      disabled={updateUserMutation.isPending}
                       className="bg-green-500 hover:bg-green-600 text-white rounded-lg 
-                        py-2 px-4 flex items-center space-x-2 text-sm transition-colors"
+                        py-2 px-4 flex items-center space-x-2 text-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      <FaCheck size={16} />
-                      <span>Save</span>
+                      {updateUserMutation.isPending ? (
+                        <>
+                          <svg
+                            className="animate-spin h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FaCheck size={16} />
+                          <span>Save</span>
+                        </>
+                      )}
                     </button>
                   </>
                 )}

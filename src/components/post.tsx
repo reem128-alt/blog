@@ -11,14 +11,20 @@ import {
   updateComment,
   deleteComment,
 } from "../utils/service";
-import { FaThumbsUp, FaRegThumbsUp, FaComment, FaUser, FaPaperPlane,FaTrash, FaEdit } from "react-icons/fa";
+import { FaThumbsUp, FaRegThumbsUp, FaComment, FaUser, FaPaperPlane, FaTrash, FaEdit } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Loading from "./loading";
 import { Link } from "react-router-dom";
 import { EditPostModal } from "./editPost";
 
-export default function PostPage(post: Post) {
-  const [isEditing, setIsEditing] = React.useState(false)
+interface PostPageProps {
+  post: Post; // Post is now required
+}
+
+export default function PostPage({ post }: PostPageProps) {
+  // No need for null check since post is now required
+  const [isEditing, setIsEditing] = React.useState(false);
   const [editingCommentId, setEditingCommentId] = React.useState<string | null>(null);
   const [editCommentContent, setEditCommentContent] = React.useState("");
   const [showComments, setShowComments] = React.useState<{
@@ -26,6 +32,8 @@ export default function PostPage(post: Post) {
   }>({});
   const [newComment, setNewComment] = React.useState("");
   const queryClient = useQueryClient();
+  
+
 
   const { data: session } = useQuery({
     queryKey: ["session"],
@@ -78,12 +86,18 @@ export default function PostPage(post: Post) {
     },
   });
 
-  const deletePostMutation = useMutation({
-    mutationFn:deletePost,
+  const deleteMutation = useMutation({
+    mutationFn: deletePost,
     onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      // Navigate away or close the post view if needed
+      // You might want to add navigation logic here
     },
-});
+    onError: (error) => {
+      console.error('Error deleting post:', error);
+      toast.error('Failed to delete post');
+    },
+  });
 
   const handleCommentLike = (commentId: string) => {
     likeCommentMutation.mutate(commentId);
@@ -117,11 +131,17 @@ export default function PostPage(post: Post) {
     setEditCommentContent(comment.content);
   };
 
-  const handleDeletePost = () => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      deletePostMutation.mutate(post._id);
-  }
-};
+  const handleDeletePost = async () => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        await deleteMutation.mutateAsync(post._id);
+        toast.success('Post deleted successfully');
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        toast.error('Failed to delete post');
+      }
+    }
+  };
 
   const toggleComments = (postId: string) => {
     setShowComments((prev) => ({
@@ -157,9 +177,28 @@ export default function PostPage(post: Post) {
               <span className="text-sm text-gray-500">• {post.category}</span>
             </div>
           </div>
-          <div className="flex flex-row gap-7">
-          {canDelete ? <FaTrash className="text-red-500" onClick={handleDeletePost} /> : null}
-          {canDelete ? <FaEdit className="text-red-500" onClick={() => setIsEditing(true)} /> : null}
+          <div className="flex flex-row gap-4">
+            {canDelete && (
+              <>
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDeletePost();
+                  }}
+                  className="text-red-500 hover:text-red-700 transition-colors"
+                  title="Delete post"
+                >
+                  <FaTrash size={18} />
+                </button>
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="text-blue-500 hover:text-blue-700 transition-colors"
+                  title="Edit post"
+                >
+                  <FaEdit size={18} />
+                </button>
+              </>
+            )}
           </div>
         
         </div>
@@ -221,10 +260,39 @@ export default function PostPage(post: Post) {
                 />
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white h-7 px-2 py-2 w-24 rounded-lg hover:bg-blue-600 flex items-center gap-2"
+                  disabled={createCommentMutation.isPending}
+                  className="bg-blue-500 text-white h-7 px-2 py-2 w-28 rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <FaPaperPlane />
-                  Send
+                  {createCommentMutation.isPending ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaPaperPlane />
+                      <span>Send</span>
+                    </>
+                  )}
                 </button>
               </form>
 
@@ -271,9 +339,36 @@ export default function PostPage(post: Post) {
                       />
                       <button
                         type="submit"
-                        className="bg-blue-500 text-white px-2 py-2 rounded-lg hover:bg-blue-600"
+                        disabled={updateCommentMutation.isPending}
+                        className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                       >
-                        Update
+                        {updateCommentMutation.isPending ? (
+                          <>
+                            <svg
+                              className="animate-spin h-4 w-4 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                            <span>Updating...</span>
+                          </>
+                        ) : (
+                          <span>Update</span>
+                        )}
                       </button>
                       <button
                         type="button"
@@ -313,6 +408,7 @@ export default function PostPage(post: Post) {
           post={post}
           isOpen={isEditing}
           onClose={() => setIsEditing(false)}
+          onDelete={handleDeletePost}
         />
       )}
     </div>

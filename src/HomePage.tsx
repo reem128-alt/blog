@@ -70,9 +70,9 @@ export default function HomePage() {
           {/* Posts List */}
           <div className="space-y-6">
             {Array.isArray(blogs) &&
-              blogs.map((post: Post) => {
-                return <PostPage {...post} key={post._id} />;
-              })}
+              blogs.map((post: Post) => (
+                <PostPage post={post} key={post._id} />
+              ))}
           </div>
           {showModal && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">

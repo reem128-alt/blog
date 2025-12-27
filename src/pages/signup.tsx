@@ -82,32 +82,25 @@ export default function SignUp() {
     setErrors(newErrors);
     return isValid;
   };
-  const mutation=useMutation({
-    mutationFn:signup,
-    onSuccess:(data)=>{
-      toast.success("signin successfully")
-      setFormData({
-         username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-      })
+  const mutation = useMutation({
+    mutationFn: signup,
+    onSuccess: (data) => {
+      toast.success("signup successfully");
       const userInfo = data.user;
-      toast.success("signin successfully");
       queryClient.setQueryData(["session"], userInfo);
       localStorage.setItem("user-session", JSON.stringify(userInfo));
       setFormData({
-        username:"",
+        username: "",
         email: "",
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
       });
       navigate(`/${languages[0]}`);
     },
-    onError:()=>{
-      toast.error("failed signup")
-    }
-  })
+    onError: () => {
+      toast.error("failed signup");
+    },
+  });
   console.log(formData)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,13 +125,14 @@ export default function SignUp() {
           Create Account
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
           <div>
             <div className="relative">
               <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 name="username"
+                autoComplete="off"
                 value={formData.username}
                 onChange={handleChange}
                 placeholder="Username"
@@ -154,6 +148,7 @@ export default function SignUp() {
               <input
                 type="email"
                 name="email"
+                autoComplete="off"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Email"
@@ -169,6 +164,7 @@ export default function SignUp() {
               <input
                 type="password"
                 name="password"
+                autoComplete="new-password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Password"
@@ -184,6 +180,7 @@ export default function SignUp() {
               <input
                 type="password"
                 name="confirmPassword"
+                autoComplete="new-password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Confirm Password"
@@ -195,10 +192,39 @@ export default function SignUp() {
 
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-cyan-500 to-pink-500 text-white rounded-lg hover:from-cyan-600 hover:to-pink-600 transition-all duration-200 flex items-center justify-center space-x-2"
+            disabled={mutation.isPending}
+            className="w-full py-3 bg-gradient-to-r from-cyan-500 to-pink-500 text-white rounded-lg hover:from-cyan-600 hover:to-pink-600 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <span>Sign Up</span>
-            <FaArrowRight />
+            {mutation.isPending ? (
+              <span className="flex items-center gap-2">
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Creating account...
+              </span>
+            ) : (
+              <>
+                <span>Sign Up</span>
+                <FaArrowRight />
+              </>
+            )}
           </button>
         </form>
 
